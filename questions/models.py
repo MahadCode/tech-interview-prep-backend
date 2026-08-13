@@ -7,6 +7,7 @@ class Question(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         related_name="questions",
+        null=True
     )
     company = models.ManyToManyField(
         "taxonomy.Company",
@@ -15,7 +16,8 @@ class Question(models.Model):
     job_role = models.ForeignKey(
         "taxonomy.JobRole",
         on_delete=models.SET_NULL,
-        related_name="questions"
+        related_name="questions",
+        null=True
     )
     class DifficultyLevel(models.TextChoices):
         EASY = "easy", "Easy"
@@ -43,4 +45,4 @@ class Question(models.Model):
     )
 
     is_active = models.BooleanField(default=True)
-    created_at = models.BigAutoField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
