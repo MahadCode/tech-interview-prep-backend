@@ -1,9 +1,13 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from phonenumber_field.modelfields import PhoneNumberField
 
 class User(AbstractUser):
-    phone = models.CharField(max_length=20, blank=True)
-    bio = models.TextField(blank=True, null=True)
+    first_name = models.CharField(max_length=150)
+    last_name = models.CharField(max_length=150)
+    email = models.EmailField(unique=True)
+    phone = PhoneNumberField(unique=True)
+    bio = models.TextField()
     class UserRole(models.TextChoices):
         USER = "user", "User"
         MODERATOR = "moderator", "Moderator"
