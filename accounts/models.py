@@ -49,4 +49,6 @@ class EmailVerificationToken(models.Model):
     token = models.CharField(max_length=150, unique=True)
     expires_at = models.DateTimeField(default=get_expiry_time)
     created_at = models.DateTimeField(auto_now_add=True)
-    
+
+class PasswordResetToken(EmailVerificationToken):
+    pass
