@@ -1,6 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from phonenumber_field.modelfields import PhoneNumberField
+import uuid
+from datetime import timedelta
+from django.utils import timezone
 
 class User(AbstractUser):
     first_name = models.CharField(max_length=150)
@@ -33,3 +36,17 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.username
+    
+def get_expiry_time():
+    return timezone.now() + timedelta(hours=1)
+
+class EmailVerificationToken(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="email_verification_tokens"
+    )
+    token = models.CharField(max_length=150, unique=True)
+    expires_at = models.DateTimeField(default=get_expiry_time)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
