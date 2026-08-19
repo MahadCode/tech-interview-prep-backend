@@ -13,6 +13,8 @@ from django.contrib.auth import authenticate, login, logout
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.sessions.models import Session
 from django.contrib.auth.password_validation import validate_password
+from rest_framework.generics import UpdateAPIView
+from .serializers import ProfileSerializer
 
 import secrets
 
@@ -173,7 +175,12 @@ class PasswordChangeView(APIView):
         return Response({"Your Password Reset Link has expired"}, status=status.HTTP_410_GONE)
         
         
-        
+class EditProfileView(UpdateAPIView):
+    serializer_class = ProfileSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_object(self):
+        return self.request.user
         
         
         
