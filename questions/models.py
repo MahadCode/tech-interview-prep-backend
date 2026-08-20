@@ -1,20 +1,30 @@
 from django.db import models
 from django.conf import settings
+
 # Create your models here.
 
 class Question(models.Model):
-    author_id = models.ForeignKey(
+    author = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         related_name="questions",
         null=True
     )
+    
     company = models.ManyToManyField(
         "taxonomy.Company",
         related_name="questions"
     )
+    
     job_role = models.ForeignKey(
         "taxonomy.JobRole",
+        on_delete=models.SET_NULL,
+        related_name="questions",
+        null=True
+    )
+    
+    tag = models.ForeignKey(
+        "taxonomy.Tag",
         on_delete=models.SET_NULL,
         related_name="questions",
         null=True
@@ -29,9 +39,9 @@ class Question(models.Model):
         choices=DifficultyLevel.choices,
         default=DifficultyLevel.EASY,
     )
-
+    
     title = models.CharField()
-    body = models.TextField()
+    description = models.TextField()
 
     class QuestionStatus(models.TextChoices):
         PENDING_REVIEW = "pending_review", "Pending_Review"
@@ -43,6 +53,6 @@ class Question(models.Model):
         choices=QuestionStatus.choices,
         default=QuestionStatus.PENDING_REVIEW
     )
-
-    is_active = models.BooleanField(default=True)
+    
+    is_deleted = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
