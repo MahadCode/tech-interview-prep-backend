@@ -56,3 +56,38 @@ class Question(models.Model):
     
     is_deleted = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+    
+class UserQuestionStatus(models.Model):
+    class StatusChoices(models.TextChoices):
+        UNSOLVED = "unsolved", "Unsolved"
+        ATTEMPTED = "attempted", "Attempted"
+        SOLVED = "solved", "Solved"
+    
+    status = models.CharField(
+        max_length=20,
+        choices = StatusChoices.choices,
+        default = StatusChoices.UNSOLVED, 
+    )
+    
+    user = models.ForeignKey(
+        "accounts.User",
+        on_delete=models.CASCADE,
+        related_name="questions_progress_status"
+    )
+    
+    question = models.ForeignKey(
+        "Question",
+        on_delete=models.CASCADE,
+        related_name = "progress_status"
+    )
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields = ['user', 'question'],
+                name = "unique_together_validator"
+            )
+        ]
