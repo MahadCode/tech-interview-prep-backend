@@ -8,12 +8,12 @@ from rest_framework import status
 from django.shortcuts import get_object_or_404
 
 # Create your views here.
-class PostQuestionView(APIView):
+class QuestionCreateView(APIView):
     permission_classes = [IsAuthenticated]
     def post(self, request):
         question_serializer = QuestionSerializer(data = request.data) 
         question_serializer.is_valid(raise_exception=True)
-        question_serializer.save(author_id = request.user)
+        question_serializer.save(author = request.user)
         return Response(question_serializer.data, status=status.HTTP_201_CREATED)
     
 class QuestionDetailView(APIView):
