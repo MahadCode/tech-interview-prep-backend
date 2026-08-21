@@ -1,8 +1,8 @@
 from django.shortcuts import render
-from .models import Question
+from .models import Question, UserQuestionStatus
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
-from .serializers import QuestionSerializer
+from .serializers import QuestionSerializer, UserQuestionStatusSerializer
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
@@ -64,6 +64,45 @@ class CompanyWiseQuestionView(APIView):
             return Response({"message": "No questions found"}, status=status.HTTP_404_NOT_FOUND)
         serializer = QuestionSerializer(questions, many=True)
         return Response(serializer.data)
+        
+
+class QuestionStatusDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request, id):
+        question = get_object_or_404(Question, id=id, is_deleted = False)
+        question_status = get_object_or_404(UserQuestionStatus, question=question, user=request.user)
+        serializer = UserQuestionStatusSerializer(question_status)
+        return Response(serializer.data)
+        
+    def post(self, request, id):
+        question = get_object_or_404(Question, id=id, is_deleted = False)
+        
+        serializer = UserQuestionStatusSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(user = request.user, question = question)
+        
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+    def patch(self, request, id):
+        question = get_object_or_404(Question, id=id, is_deleted = False)
+        question_status = get_object_or_404(UserQuestionStatus, question=question, user=request.user)
+        serializer = UserQuestionStatusSerializer(question_status, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+    
+    def delete(self, request, id):
+        question = get_object_or_404(Question, id=id, is_deleted = False)
+        question_status = get_object_or_404(UserQuestionStatus, question=question, user=request.user)
+        question_status.delete()
+        return Response({"message": "Successful Deletion"})
+        
+    
+    
+        
+        
+        
         
         
         
