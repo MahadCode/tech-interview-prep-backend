@@ -10,4 +10,6 @@ class SolutionAdmin(admin.ModelAdmin):
 class SolutionAdmin(admin.ModelAdmin):
     list_display = ['id', 'author', 'question', 'solution', 'reply_to', 'content']
     
-admin.site.register(Report)
+@admin.register(Report)
+class ReportAdmin(admin.ModelAdmin):
+    list_display = ['id', 'reporter', 'reviewed_by', 'reason', 'question', 'solution', 'comment', 'status']

@@ -1,20 +1,20 @@
-from .models import Solution, Comment
+from .models import Solution, Comment, Report
 from rest_framework import serializers
+
 
 class SolutionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Solution
-        fields = '__all__'
-        read_only_fields = ['id', 'question', 'author', 'created_at', 'updated_at']
-    
-            
+        fields = "__all__"
+        read_only_fields = ["id", "question", "author", "created_at", "updated_at"]
+
 
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
-        fields = '__all__'
-        read_only_fields = ['author', 'created_at', 'updated_at']
-        
+        fields = "__all__"
+        read_only_fields = ["author", "created_at", "updated_at"]
+
     def validate(self, attrs):
         question = attrs.get("question")
         solution = attrs.get("solution")
@@ -23,7 +23,7 @@ class CommentSerializer(serializers.ModelSerializer):
             if question and solution:
                 raise serializers.ValidationError(
                     "A comment cannot belong to both a question and a solution"
-            )
+                )
 
             if question and reply_to:
                 raise serializers.ValidationError(
@@ -44,5 +44,39 @@ class CommentSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(
                     "Can't Change the Reference Object while editing the comment"
                 )
-            
+
+        return attrs
+
+class ReportSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Report
+        fields = ["id", "reporter", "question", "solution", "comment", "reviewed_by", "reason", "status", "created_at", "resolved_at" ]
+        read_only_fields = ["id", "reporter", "reviewed_by", "status", "created_at", "resolved_at"]
+    
+    def get_extra_kwargs(self):
+        extra_kwargs = super().get_extra_kwargs()
+        request = self.context.get("request")
+
+        if request and request.method == "PATCH":
+            for field in ["question", "solution", "comment"]:
+                extra_kwargs[field] = {"read_only": True}
+
+        return extra_kwargs
+    
+    def validate(self, attrs):
+        request = self.context.get("request")
+        if request and request.method == "PATCH":
+            return attrs
+        
+        question = attrs.get("question")
+        solution = attrs.get("solution")
+        comment = attrs.get("comment")
+
+        targets = [question, solution, comment]
+
+        if sum(target is not None for target in targets) != 1:
+            raise serializers.ValidationError(
+                "A report must belong to exactly one of a question, solution, or comment."
+            )
+
         return attrs
