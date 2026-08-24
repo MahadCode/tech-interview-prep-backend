@@ -2,54 +2,59 @@ from django.db import models
 from django.conf import settings
 
 # Create your models here.
+from django.db import models
+from django.conf import settings
+
+
 class PreparationGoal(models.Model):
+
+    class GoalMetric(models.TextChoices):
+        QUESTION_COUNT = "question_count", "Question Count"
+        TOPIC_MASTERY = "topic_mastery", "Topic Mastery"
+        COMPANY_TARGET = "company_target", "Company Target"
+
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE 
+        on_delete=models.CASCADE,
+        related_name="preparation_goals"
     )
-    
-    class GoalMetric(models.TextChoices):
-        QUESTION_COUNT = "question_count", "Question_Count"
-        TOPIC_MASTERY = "topic_mastery", "Topic_Mastery"
-        COMPANY_TARGET = "company_target", "Company_Target"
-        
+
     metric = models.CharField(
         max_length=20,
         choices=GoalMetric.choices,
-        default=GoalMetric.QUESTION_COUNT
+    )
+
+    target_tag = models.ForeignKey(
+        "taxonomy.Tag",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="preparation_goals"
     )
 
     target_company = models.ForeignKey(
         "taxonomy.Company",
-        on_delete=models.CASCADE
-    )
-    
-    target_value = models.IntegerField()
-    current_progress = models.IntegerField()
-    deadline = models.DateField()
-    created_at = models.DateTimeField(auto_now_add=True)
-    
-    
-class ProgressRecord(models.Model):
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE 
-    )
-    question = models.ForeignKey(
-        "questions.Question",
         on_delete=models.SET_NULL,
-        null=True
+        null=True,
+        blank=True,
+        related_name="preparation_goals"
     )
-    class ProgressStatus(models.TextChoices):
-        UNSOLVED = "unsolved", "Unsolved"
-        ATTEMPTED = "attempted", "Attempted"
-        SOLVED = "solved", "Solved"
-    
-    status = models.CharField(
-        max_length=20,
-        choices=ProgressStatus.choices,
-        default=ProgressStatus.UNSOLVED,
+
+    target_value = models.PositiveIntegerField(
+        null=True,
+        blank=True
+    )
+
+    deadline = models.DateField(
+        null=True,
+        blank=True
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
     )
     
-    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.user} - {self.metric}"
     

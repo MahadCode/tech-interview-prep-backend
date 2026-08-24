@@ -22,5 +22,6 @@ urlpatterns = [
     path('auth/', include("accounts.urls")),
     path('profile/', include("accounts.profile_urls")),
     path('questions/', include("questions.urls")),
-    path("", include("discussions.urls"))
+    path("", include("discussions.urls")),
+    path("progress/", include("progress.urls")),
 ]
