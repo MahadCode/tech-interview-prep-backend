@@ -67,25 +67,24 @@ class Comment(models.Model):
 class Report(models.Model):
     reporter = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        related_name="reporter",
-        null=True,
+        on_delete=models.CASCADE,
+        related_name="submitted_reports",
     )
     
     question = models.ForeignKey(
-        "questions.Question", on_delete=models.SET_NULL, null=True
+        "questions.Question", on_delete=models.SET_NULL, null=True, blank=True
     )
-    solution = models.ForeignKey("Solution", on_delete=models.SET_NULL, null=True)
-    comment = models.ForeignKey("Comment", on_delete=models.SET_NULL, null=True)
+    solution = models.ForeignKey("Solution", on_delete=models.SET_NULL, null=True, blank=True)
+    comment = models.ForeignKey("Comment", on_delete=models.SET_NULL, null=True, blank=True)
     
     reviewed_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
-        related_name="reviewer",
+        related_name="reviewed_reports",
         null=True,
     )
 
-    reason = models.TextField()
+    reason = models.TextField(blank=True, null=True)
 
     class Status(models.TextChoices):
         PENDING = "pending", "Pending"
@@ -100,4 +99,25 @@ class Report(models.Model):
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
-    resolved_at = models.DateTimeField()
+    resolved_at = models.DateTimeField(blank=True, null=True)
+
+    def clean(self):
+        if self.question and self.solution:
+            raise ValidationError(
+                "A Report cannot belong to both a question and a solution"
+            )
+
+        if self.question and self.comment:
+            raise ValidationError(
+                "A Report cannot belong to both a question and a comment"
+            )
+
+        if self.solution and self.comment:
+            raise ValidationError(
+                "A Report cannot belong to both a comment and a solution"
+            )
+
+        if not self.solution and not self.question and not self.comment:
+            raise ValidationError(
+                "A Report must belong to either a question or a solution or a comment"
+            )
