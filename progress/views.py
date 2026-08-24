@@ -67,7 +67,6 @@ class PreparationStatisticsView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        print("Get hit", flush=True)
         serializer = PreparationStatisticsSerializer(instance=request.user, context={"request": request})
 
         return Response(serializer.data, status=status.HTTP_200_OK)
