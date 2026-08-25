@@ -24,4 +24,5 @@ urlpatterns = [
     path('questions/', include("questions.urls")),
     path("", include("discussions.urls")),
     path("progress/", include("progress.urls")),
+    path("moderation/", include("moderation.urls"))
 ]

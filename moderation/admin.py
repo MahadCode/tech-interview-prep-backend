@@ -1,4 +1,6 @@
 from django.contrib import admin
-from .models import ModeratorActions
+from .models import ModerationReport
 # Register your models here.
-admin.site.register(ModeratorActions)
+@admin.register(ModerationReport)
+class ModerationReportAdmin(admin.ModelAdmin):
+    list_display = ['id', 'report', 'moderator', 'action']
