@@ -1,16 +1,32 @@
 from django.db import models
 from django.conf import settings
 
-# Create your models here.
 
-class ModeratorActions(models.Model):
+class ModerationReport(models.Model):
+
+    report = models.OneToOneField(
+        "discussions.Report",
+        on_delete=models.CASCADE,
+        related_name="moderation",
+    )
+
     moderator = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE     
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="moderation_actions",
     )
-    
-    target_type = models.CharField()
-    target_id = models.CharField()
-    action = models.CharField()
-    reason = models.TextField()
-    created_at = models.DateTimeField()
+
+    class Action(models.TextChoices):
+        APPROVE = "approve", "Approve"
+        EDIT = "edit", "Edit"
+        REMOVE = "remove", "Remove"
+
+    action = models.CharField(
+        max_length=20,
+        choices=Action.choices,
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
