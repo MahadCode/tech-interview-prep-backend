@@ -10,6 +10,11 @@ from django.shortcuts import get_object_or_404
 # Create your views here.
 class QuestionCreateView(APIView):
     permission_classes = [IsAuthenticated]
+    def get(self, request):
+        questions = Question.objects.filter(is_deleted=False, status=Question.QuestionStatus.PUBLISHED)
+        question_serializer = QuestionSerializer(questions, many=True)
+        return Response(question_serializer.data)
+        
     def post(self, request):
         question_serializer = QuestionSerializer(data = request.data) 
         question_serializer.is_valid(raise_exception=True)
@@ -23,7 +28,7 @@ class QuestionDetailView(APIView):
         question = get_object_or_404(Question, id=id, is_deleted=False)
         if question.status == Question.QuestionStatus.PUBLISHED:
             serializer = QuestionSerializer(question)
-            return Response(serializer)
+            return Response(serializer.data)
         return Response({"message": "Question hasn't been published yet"}, status=status.HTTP_404_NOT_FOUND)
 
     def patch(self, request, id):
@@ -31,7 +36,7 @@ class QuestionDetailView(APIView):
         
         if request.user.id != question.author.id:
             return Response({"message": "You are not author of the post"}, status=status.HTTP_403_FORBIDDEN)
-
+        
         serializer = QuestionSerializer(
             question,
             data=request.data,
