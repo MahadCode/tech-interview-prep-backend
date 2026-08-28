@@ -13,8 +13,10 @@ from django.contrib.auth import authenticate, login, logout
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.sessions.models import Session
 from django.contrib.auth.password_validation import validate_password
-from rest_framework.generics import UpdateAPIView
+from rest_framework.generics import UpdateAPIView, RetrieveAPIView
 from .serializers import ProfileSerializer
+from django.views.decorators.csrf import ensure_csrf_cookie
+from django.http import JsonResponse
 
 import secrets
 
@@ -181,7 +183,17 @@ class EditProfileView(UpdateAPIView):
     
     def get_object(self):
         return self.request.user
-        
+    
+class CurrentUserView(RetrieveAPIView):
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        return self.request.user
+
+@ensure_csrf_cookie
+def get_csrf_token(request):
+    return JsonResponse({"detail": "CSRF cookie set"})
         
         
     

@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import RegisterView, EmailVerificationView, LoginView, LogoutView, PasswordRecoveryLink, PasswordChangeView
+from .views import RegisterView, EmailVerificationView, LoginView, LogoutView, PasswordRecoveryLink, PasswordChangeView, CurrentUserView, get_csrf_token
 
 urlpatterns = [
     path("register/", RegisterView.as_view(), name="register"),
@@ -7,5 +7,7 @@ urlpatterns = [
     path("login/", LoginView.as_view(), name="login"),
     path("logout/", LogoutView.as_view(), name="logout"),
     path("recover-password/", PasswordRecoveryLink.as_view(), name="recover-password"),
-    path("change-password/<str:token>/", PasswordChangeView.as_view(), name="change-password")
+    path("change-password/<str:token>/", PasswordChangeView.as_view(), name="change-password"),
+    path("current-user/", CurrentUserView.as_view(), name="current-user"),
+    path("csrf/", get_csrf_token, name="csrf"),
 ]
