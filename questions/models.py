@@ -23,11 +23,9 @@ class Question(models.Model):
         null=True
     )
     
-    tag = models.ForeignKey(
+    tag = models.ManyToManyField(
         "taxonomy.Tag",
-        on_delete=models.SET_NULL,
         related_name="questions",
-        null=True
     )
     class DifficultyLevel(models.TextChoices):
         EASY = "easy", "Easy"
@@ -51,7 +49,7 @@ class Question(models.Model):
     status = models.CharField(
         max_length=20,
         choices=QuestionStatus.choices,
-        default=QuestionStatus.PENDING_REVIEW
+        default=QuestionStatus.PUBLISHED
     )
     
     is_deleted = models.BooleanField(default=False)
