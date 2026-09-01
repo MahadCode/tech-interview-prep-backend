@@ -3,7 +3,7 @@ from django.shortcuts import render
 # Create your views here.
 
 from rest_framework.views import APIView
-from .serializers import SolutionSerializer, CommentSerializer, ReportSerializer
+from .serializers import SolutionSerializer, CommentSerializer, ReportSerializer, QuestionCommentSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
@@ -14,7 +14,15 @@ from questions.models import Question
 
 class SolutionCreateView(APIView):
     permission_classes = [IsAuthenticated]
-
+    
+    def get(self, request, id):
+        question = get_object_or_404(Question, id=id)
+        solutions = Solution.objects.filter(question=question)
+        if solutions:
+            serializer = SolutionSerializer(solutions, many=True)
+            return Response(serializer.data)
+        return Response({"message": "No Solutions Found"}, status=status.HTTP_404_NOT_FOUND)
+        
     def post(self, request, id):
         serializer = SolutionSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -61,11 +69,11 @@ class CommentDetailView(APIView):
     permission_classes = [IsAuthenticated]
     
     def get(self, request):
-        reports = Report.objects.all()
-        if reports.exists():
-            serializer = ReportSerializer(reports, many=True)
+        comments = Comment.objects.all()
+        if comments.exists():
+            serializer = CommentSerializer(comments, many=True)
             return Response(serializer.data)
-        return Response( {"message": "No reports found."}, status=status.HTTP_404_NOT_FOUND)
+        return Response( {"message": "No comments found."}, status=status.HTTP_404_NOT_FOUND)
 
     def patch(self, request, id):
         comment = get_object_or_404(Comment, id=id)
@@ -128,3 +136,13 @@ class ReportDetailView(APIView):
         report = self.get_object(id, request.user)
         report.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+    
+class QuestionCommentListView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request, id):
+        question = get_object_or_404(Question, id=id, is_deleted=False)
+        comments = Comment.objects.filter(question=question)
+        serializer = QuestionCommentSerializer(comments, many=True)
+        return Response(serializer.data)
+        

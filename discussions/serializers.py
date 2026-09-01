@@ -1,19 +1,22 @@
 from .models import Solution, Comment, Report
 from rest_framework import serializers
+from accounts.serializers import UserSerializer
 
 
 class SolutionSerializer(serializers.ModelSerializer):
+    author = UserSerializer(read_only=True)
     class Meta:
         model = Solution
         fields = "__all__"
-        read_only_fields = ["id", "question", "author", "created_at", "updated_at"]
+        read_only_fields = ["id", "question", "created_at", "updated_at"]
 
 
 class CommentSerializer(serializers.ModelSerializer):
+    author = UserSerializer(read_only=True)
     class Meta:
         model = Comment
         fields = "__all__"
-        read_only_fields = ["author", "created_at", "updated_at"]
+        read_only_fields = ["created_at", "updated_at"]
 
     def validate(self, attrs):
         question = attrs.get("question")
@@ -80,3 +83,26 @@ class ReportSerializer(serializers.ModelSerializer):
             )
 
         return attrs
+
+
+class QuestionCommentSerializer(serializers.ModelSerializer):
+    author = UserSerializer(read_only=True)
+    replies = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Comment
+        fields = [
+            "id",
+            "content",
+            "author",
+            "reply_to",
+            "replies",
+            "created_at",
+            "updated_at",
+        ]
+
+    def get_replies(self, obj):
+        return QuestionCommentSerializer(
+            obj.replies.all(),
+            many=True
+        ).data
