@@ -30,7 +30,7 @@ class QuestionSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "status", "is_deleted"]
         
 class UserQuestionStatusSerializer(serializers.ModelSerializer):
-    
+    question = QuestionSerializer()
     class Meta:
         model = UserQuestionStatus
         fields = '__all__'

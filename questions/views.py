@@ -103,6 +103,22 @@ class QuestionStatusDetailView(APIView):
         question_status.delete()
         return Response({"message": "Successful Deletion"})
         
+
+class UserQuestionStatusListView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        question_status = request.user.questions_progress_status.filter(
+            question__status = Question.QuestionStatus.PUBLISHED,
+            question__is_deleted = False
+        ).exclude(
+            status = UserQuestionStatus.StatusChoices.UNSOLVED
+        ).select_related("question")
+        
+        serializer = UserQuestionStatusSerializer(question_status, many=True)
+        return Response(serializer.data)
+        
+        
     
     
         
