@@ -175,10 +175,27 @@ class PreparationGoalSerializer(serializers.ModelSerializer):
 
 class PreparationStatisticsSerializer(serializers.Serializer):
 
+    total_question = serializers.SerializerMethodField()
     total_solved = serializers.SerializerMethodField()
+    total_attempted = serializers.SerializerMethodField()
+    total_unsolved = serializers.SerializerMethodField()
     difficulty_breakdown = serializers.SerializerMethodField()
     topic_breakdown = serializers.SerializerMethodField()
     company_breakdown = serializers.SerializerMethodField()
+    
+    def get_total_data(self, *field):
+        return (
+            Question.objects
+            .filter(
+                status=Question.QuestionStatus.PUBLISHED,
+                is_deleted=False,
+            )
+            .values(*field)
+            .annotate(
+                total_count=Count("id", distinct=True)
+            )
+        )
+    
 
     def get_solved_queryset(self, obj):
 
@@ -188,70 +205,117 @@ class PreparationStatisticsSerializer(serializers.Serializer):
             question__status=Question.QuestionStatus.PUBLISHED,
             question__is_deleted=False,
         )
-        
-        return solved_questions
 
+        return solved_questions
+    
+    def get_solved_lookup(self, obj, field):
+        solved_questions = self.get_solved_queryset(obj)
+
+        solved_data = (
+            solved_questions
+            .values(field)
+            .annotate(
+                solved_count=Count("question", distinct=True)
+            )
+        )
+
+        return {
+            item[field]: item["solved_count"]
+            for item in solved_data
+        }
+    
+    def get_total_question(self,obj):
+        total_questions = Question.objects.filter(
+            status = Question.QuestionStatus.PUBLISHED,
+            is_deleted = False
+        )
+        return total_questions.count()
+    
     def get_total_solved(self, obj):
         solved_questions = self.get_solved_queryset(obj)
         return solved_questions.count()
+    
+    def get_total_attempted(self, obj):
+        attempted_questions = UserQuestionStatus.objects.filter(
+            user=obj,
+            status=UserQuestionStatus.StatusChoices.ATTEMPTED,
+            question__status=Question.QuestionStatus.PUBLISHED,
+            question__is_deleted=False,
+        )
+        return attempted_questions.count()
+    
+    def get_total_unsolved(self, obj):
+        return self.get_total_question(obj) - self.get_total_solved(obj) - self.get_total_attempted(obj)
+        
 
     def get_difficulty_breakdown(self, obj):
-        solved_questions = self.get_solved_queryset(obj)
 
-        difficulty_data = solved_questions.values(
+        total_data = self.get_total_data("difficulty_level")
+
+        solved_lookup = self.get_solved_lookup(
+            obj,
             "question__difficulty_level"
-        ).annotate(solved_count=Count("question"))
-
-        result = []
-
-        for item in difficulty_data:
-            result.append(
-                {
-                    "difficulty": item["question__difficulty_level"],
-                    "solved": item["solved_count"],
-                }
-            )
-
-        return result
-
-    def get_topic_breakdown(self, obj):
-        solved_questions = self.get_solved_queryset(obj)
-
-        topic_data = (
-            solved_questions.filter(question__tag__isnull=False)
-            .values("question__tag_id", "question__tag__name")
-            .annotate(solved_count=Count("question"))
         )
 
         result = []
 
-        for item in topic_data:
-            result.append(
-                {
-                    "tag_id": item["question__tag_id"],
-                    "tag_name": item["question__tag__name"],
-                    "solved": item["solved_count"],
-                }
-            )
+        for item in total_data:
+            difficulty = item["difficulty_level"]
+
+            result.append({
+                "difficulty": difficulty,
+                "total": item["total_count"],
+                "solved": solved_lookup.get(difficulty, 0),
+            })
 
         return result
+    
+    def get_topic_breakdown(self, obj):
+        total_data = self.get_total_data(
+            "tag__id",
+            "tag__name"
+        )
 
-    def get_company_breakdown(self, obj):
-        solved_questions = self.get_solved_queryset(obj)
-
-        company_data = solved_questions.values(
-            "question__company__id", "question__company__name"
-        ).annotate(solved_count=Count("question"))
+        solved_lookup = self.get_solved_lookup(
+            obj,
+            "question__tag__id",
+        )
 
         result = []
 
-        for item in company_data:
-            result.append(
-                {
-                    "company_id": item["question__company__id"],
-                    "company_name": item["question__company__name"],
-                    "solved": item["solved_count"],
-                }
-            )
+        for item in total_data:
+            tag_id = item["tag__id"]
+
+            result.append({
+                "tag_id": tag_id,
+                "tag_name": item["tag__name"],
+                "total": item["total_count"],
+                "solved": solved_lookup.get(tag_id, 0),
+            })
+
+        return result
+    
+    def get_company_breakdown(self, obj):
+        total_data = self.get_total_data(
+            "company__id",
+            "company__name"
+        )
+
+        solved_lookup = self.get_solved_lookup(
+            obj,
+            "question__company__id",
+        )
+
+        result = []
+
+        for item in total_data:
+            company_id = item["company__id"]
+
+            result.append({
+                "company_id": company_id,
+                "company_name": item["company__name"],
+                "total": item["total_count"],
+                "solved": solved_lookup.get(company_id, 0),
+            })
 
         return result
