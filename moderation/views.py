@@ -29,7 +29,7 @@ class ModerationReportDetailView(APIView):
 
     permission_classes = [IsModeratorOrAdmin]
     
-    def approve(self, moderation_report, moderator):
+    def dismiss(self, moderation_report, moderator):
         report = moderation_report.report
 
         report.status = Report.Status.DISMISSED
@@ -37,7 +37,7 @@ class ModerationReportDetailView(APIView):
         report.resolved_at = timezone.now()
         report.save()
 
-        moderation_report.action = ModerationReport.Action.APPROVE
+        moderation_report.action = ModerationReport.Action.DISMISS
         moderation_report.moderator = moderator
         moderation_report.reviewed_at = timezone.now()
         moderation_report.save()
@@ -115,8 +115,8 @@ class ModerationReportDetailView(APIView):
         serializer.is_valid(raise_exception=True)
         action = serializer.validated_data["action"]
 
-        if action == ModerationReport.Action.APPROVE:
-            self.approve(moderation_report, request.user)
+        if action == ModerationReport.Action.DISMISS:
+            self.dismiss(moderation_report, request.user)
         elif action == ModerationReport.Action.EDIT:
             self.edit(moderation_report, request.user, serializer.validated_data)
         elif action == ModerationReport.Action.REMOVE:

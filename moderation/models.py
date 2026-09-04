@@ -19,7 +19,7 @@ class ModerationReport(models.Model):
     )
 
     class Action(models.TextChoices):
-        APPROVE = "approve", "Approve"
+        DISMISS = "dismiss", "Dismiss"
         EDIT = "edit", "Edit"
         REMOVE = "remove", "Remove"
 
