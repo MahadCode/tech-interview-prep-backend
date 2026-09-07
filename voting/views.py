@@ -2,12 +2,12 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
-from rest_framework.permissions import IsAuthenticated
 from .models import Vote
 from questions.models import Question
+from accounts.permissions import IsVerifiedUser
 
 class QuestionVoteView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsVerifiedUser]
     def post(self, request, question_id):
         question = get_object_or_404(Question, id=question_id, is_deleted=False, status=Question.QuestionStatus.PUBLISHED)
 
@@ -47,7 +47,7 @@ class QuestionVoteView(APIView):
         
 
 class QuestionVoteDetailView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsVerifiedUser]
 
     def get(self, request, question_id):
         question = get_object_or_404(Question, id=question_id)

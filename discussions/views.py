@@ -10,10 +10,11 @@ from rest_framework import status
 from django.shortcuts import get_object_or_404
 from .models import Solution, Comment, Report
 from questions.models import Question
+from accounts.permissions import IsVerifiedUser
 
 
 class SolutionCreateView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsVerifiedUser]
     
     def get(self, request, id):
         question = get_object_or_404(Question, id=id)
@@ -32,7 +33,7 @@ class SolutionCreateView(APIView):
 
 
 class SolutionDetailView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsVerifiedUser]
 
     def patch(self, request, id):
         solution = get_object_or_404(Solution, id=id)
@@ -56,7 +57,7 @@ class SolutionDetailView(APIView):
 
 
 class CommentCreateView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsVerifiedUser]
 
     def post(self, request):
         serializer = CommentSerializer(data=request.data)
@@ -66,7 +67,7 @@ class CommentCreateView(APIView):
 
 
 class CommentDetailView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsVerifiedUser]
     
     def get(self, request):
         comments = Comment.objects.all()
@@ -97,7 +98,7 @@ class CommentDetailView(APIView):
 
 
 class ReportListCreateView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsVerifiedUser]
     
     def get(self, request):
         reports = Report.objects.filter(reporter=request.user)
@@ -115,7 +116,7 @@ class ReportListCreateView(APIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 class ReportDetailView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsVerifiedUser]
 
     def get_object(self, id, user):
         return get_object_or_404(Report, id=id, reporter=user)
@@ -138,7 +139,7 @@ class ReportDetailView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
     
 class QuestionCommentListView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsVerifiedUser]
     
     def get(self, request, id):
         question = get_object_or_404(Question, id=id, is_deleted=False)

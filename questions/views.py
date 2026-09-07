@@ -6,10 +6,18 @@ from .serializers import QuestionSerializer, UserQuestionStatusSerializer
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
+from accounts.permissions import IsVerifiedUser
 
 # Create your views here.
 class QuestionCreateView(APIView):
-    permission_classes = [IsAuthenticated]
+    def get_permissions(self):
+        if self.request.method == "GET":
+            permission_classes = [IsAuthenticated]
+        else:
+            permission_classes = [IsVerifiedUser]
+
+        return [permission() for permission in permission_classes]
+
     def get(self, request):
         questions = Question.objects.filter(is_deleted=False, status=Question.QuestionStatus.PUBLISHED)
         question_serializer = QuestionSerializer(questions, many=True)
@@ -22,7 +30,7 @@ class QuestionCreateView(APIView):
         return Response(question_serializer.data, status=status.HTTP_201_CREATED)
     
 class QuestionDetailView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsVerifiedUser]
     
     def get(self, request, id):
         question = get_object_or_404(Question, id=id, is_deleted=False)
@@ -72,7 +80,7 @@ class CompanyWiseQuestionView(APIView):
         
 
 class QuestionStatusDetailView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsVerifiedUser]
     
     def get(self, request, id):
         question = get_object_or_404(Question, id=id, is_deleted = False)
@@ -105,7 +113,7 @@ class QuestionStatusDetailView(APIView):
         
 
 class UserQuestionStatusListView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsVerifiedUser]
     
     def get(self, request):
         question_status = request.user.questions_progress_status.filter(
