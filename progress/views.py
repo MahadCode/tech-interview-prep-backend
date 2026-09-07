@@ -3,14 +3,14 @@ from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
 
 from .models import PreparationGoal
 from .serializers import PreparationGoalSerializer, PreparationStatisticsSerializer
+from accounts.permissions import IsVerifiedUser
 
 
 class PreparationGoalListCreateView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsVerifiedUser]
 
     def get(self, request):
         goals = PreparationGoal.objects.filter(user=request.user).select_related(
@@ -32,7 +32,7 @@ class PreparationGoalListCreateView(APIView):
 
 
 class PreparationGoalDetailView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsVerifiedUser]
 
     def get_object(self, request, id):
         return get_object_or_404(PreparationGoal, id=id, user=request.user)
@@ -64,7 +64,7 @@ class PreparationGoalDetailView(APIView):
 
 
 class PreparationStatisticsView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsVerifiedUser]
 
     def get(self, request):
         serializer = PreparationStatisticsSerializer(instance=request.user, context={"request": request})
