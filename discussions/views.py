@@ -34,6 +34,12 @@ class SolutionCreateView(APIView):
 
 class SolutionDetailView(APIView):
     permission_classes = [IsVerifiedUser]
+    
+    def get(self, request, id):
+        solution = get_object_or_404(Solution, id=id)
+
+        serializer = SolutionSerializer(solution)
+        return Response(serializer.data)
 
     def patch(self, request, id):
         solution = get_object_or_404(Solution, id=id)
