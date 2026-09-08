@@ -1,16 +1,14 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from .models import Company, JobRole, Tag
 from .serializers import CompanySerializer, JobRoleSerializer, TagSerializer
-from moderation.permissions import IsModeratorOrAdmin
-
 
 class CompanyView(APIView):
     def get_permissions(self):
         if self.request.method == "POST":
-            return [IsModeratorOrAdmin()]
+            return [IsAuthenticated()]
         return [AllowAny()]
 
     def get(self, request):
@@ -24,12 +22,13 @@ class CompanyView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+        
+        
 
 class JobRoleView(APIView):
     def get_permissions(self):
         if self.request.method == "POST":
-            return [IsModeratorOrAdmin()]
+            return [IsAuthenticated()]
         return [AllowAny()]
 
     def get(self, request):
@@ -48,7 +47,7 @@ class JobRoleView(APIView):
 class TagView(APIView):
     def get_permissions(self):
         if self.request.method == "POST":
-            return [IsModeratorOrAdmin()]
+            return [IsAuthenticated]
         return [AllowAny()]
 
     def get(self, request):
