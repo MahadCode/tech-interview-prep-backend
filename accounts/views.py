@@ -43,7 +43,6 @@ def send_verification_email(user, token):
     )
     
 def send_password_recovery_email(user,token):
-    print("in function")
     change_password_url = "http://localhost:8000/auth/change-password/" + token + "/"
     send_mail(
         subject="Change your password",
