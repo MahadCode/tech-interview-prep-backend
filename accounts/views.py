@@ -323,3 +323,38 @@ class PasswordChangeView(APIView):
         return Response(
             {"message": "Your password has successfully changed"}
         )
+        
+class DeleteProfileView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request):
+        username = request.data.get("username")
+        password = request.data.get("password")
+
+        if not username or not password:
+            return Response(
+                {"detail": "Username and password are required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        user = request.user
+
+        if user.username != username:
+            return Response(
+                {"detail": "Username is not correct"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if not user.check_password(password):
+            return Response(
+                {"detail": "Invalid credentials."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        logout(request)
+        user.delete()
+
+        return Response(
+            {"detail": "Account deleted successfully."},
+            status=status.HTTP_204_NO_CONTENT
+        )
