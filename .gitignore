@@ -12,3 +12,4 @@ staticfiles/
 .idea/
 Thumbs.db
 *.egg-info/
+.env
