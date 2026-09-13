@@ -19,6 +19,7 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from django.http import JsonResponse
 from django.core.exceptions import ValidationError
 from django.contrib.auth.hashers import check_password
+from django.middleware.csrf import get_token
 
 
 import secrets
