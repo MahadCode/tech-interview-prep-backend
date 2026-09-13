@@ -19,7 +19,7 @@ class QuestionCreateView(APIView):
         return [permission() for permission in permission_classes]
 
     def get(self, request):
-        questions = Question.objects.filter(is_deleted=False, status=Question.QuestionStatus.PUBLISHED)
+        questions = Question.objects.filter(is_deleted=False, status=Question.QuestionStatus.PUBLISHED).select_related("author","job_role").prefetch_related("company","tag")
         question_serializer = QuestionSerializer(questions, many=True)
         return Response(question_serializer.data)
         
@@ -33,14 +33,14 @@ class QuestionDetailView(APIView):
     permission_classes = [IsVerifiedUser]
     
     def get(self, request, id):
-        question = get_object_or_404(Question, id=id, is_deleted=False)
+        question = get_object_or_404( Question.objects.select_related("author", "job_role").prefetch_related("company", "tag"), id=id, is_deleted=False)
         if question.status == Question.QuestionStatus.PUBLISHED:
             serializer = QuestionSerializer(question)
             return Response(serializer.data)
         return Response({"message": "Question hasn't been published yet"}, status=status.HTTP_404_NOT_FOUND)
 
     def patch(self, request, id):
-        question = get_object_or_404(Question, id=id, is_deleted=False)
+        question = get_object_or_404( Question.objects.select_related("author", "job_role").prefetch_related("company", "tag"), id=id, is_deleted=False)
         
         if request.user.id != question.author.id:
             return Response({"message": "You are not author of the post"}, status=status.HTTP_403_FORBIDDEN)
@@ -57,7 +57,7 @@ class QuestionDetailView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     def delete(self, request, id):
-        question = get_object_or_404(Question, id=id)   
+        question = get_object_or_404( Question.objects.select_related("author", "job_role").prefetch_related("company", "tag"), id=id)   
          
         if request.user.id != question.author.id:
             return Response({"message": "You are not author of the post"}, status=status.HTTP_403_FORBIDDEN)
