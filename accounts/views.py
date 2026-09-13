@@ -118,8 +118,9 @@ class CurrentUserView(RetrieveAPIView):
 
 @ensure_csrf_cookie
 def get_csrf_token(request):
-    return JsonResponse({"detail": "CSRF cookie set"})
-        
+    token = get_token(request)
+    return JsonResponse({"csrfToken": token})
+    
 
 class EmailVerificationView(APIView):
     renderer_classes = [JSONRenderer]
