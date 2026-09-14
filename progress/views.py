@@ -35,7 +35,10 @@ class PreparationGoalDetailView(APIView):
     permission_classes = [IsVerifiedUser]
 
     def get_object(self, request, id):
-        return get_object_or_404(PreparationGoal, id=id, user=request.user)
+        return get_object_or_404(PreparationGoal.objects.select_related(
+            "target_tag",
+            "target_company"
+        ), id=id, user=request.user)
 
     def get(self, request, id):
         goal = self.get_object(request, id)

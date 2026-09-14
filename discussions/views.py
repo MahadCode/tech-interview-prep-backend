@@ -18,7 +18,7 @@ class SolutionCreateView(APIView):
     
     def get(self, request, id):
         question = get_object_or_404(Question, id=id)
-        solutions = Solution.objects.filter(question=question)
+        solutions = Solution.objects.select_related("author").filter(question=question)
         if solutions:
             serializer = SolutionSerializer(solutions, many=True)
             return Response(serializer.data)
@@ -36,13 +36,13 @@ class SolutionDetailView(APIView):
     permission_classes = [IsVerifiedUser]
     
     def get(self, request, id):
-        solution = get_object_or_404(Solution, id=id)
+        solution = get_object_or_404(Solution.objects.select_related("author"), id=id)
 
         serializer = SolutionSerializer(solution)
         return Response(serializer.data)
 
     def patch(self, request, id):
-        solution = get_object_or_404(Solution, id=id)
+        solution = get_object_or_404(Solution.objects.select_related("author"), id=id)
 
         if request.user.id == solution.author.id:
             serializer = SolutionSerializer(solution, data=request.data, partial=True)
@@ -53,7 +53,7 @@ class SolutionDetailView(APIView):
         return Response(status=status.HTTP_403_FORBIDDEN)
 
     def delete(self, request, id):
-        solution = get_object_or_404(Solution, id=id)
+        solution = get_object_or_404(Solution.objects.select_related("author"), id=id)
 
         if request.user.id == solution.author.id:
             solution.delete()
@@ -76,14 +76,14 @@ class CommentDetailView(APIView):
     permission_classes = [IsVerifiedUser]
     
     def get(self, request):
-        comments = Comment.objects.all()
+        comments = Comment.objects.select_related("author")
         if comments.exists():
             serializer = CommentSerializer(comments, many=True)
             return Response(serializer.data)
         return Response( {"message": "No comments found."}, status=status.HTTP_404_NOT_FOUND)
 
     def patch(self, request, id):
-        comment = get_object_or_404(Comment, id=id)
+        comment = get_object_or_404(Comment.objects.select_related("author"), id=id)
 
         if request.user.id == comment.author.id:
             serializer = CommentSerializer(comment, data=request.data, partial=True)
@@ -94,7 +94,7 @@ class CommentDetailView(APIView):
         return Response(status=status.HTTP_403_FORBIDDEN)
 
     def delete(self, request, id):
-        comment = get_object_or_404(Comment, id=id)
+        comment = get_object_or_404(Comment.objects.select_related("author"), id=id)
 
         if request.user.id == comment.author.id:
             comment.delete()
@@ -149,7 +149,11 @@ class QuestionCommentListView(APIView):
     
     def get(self, request, id):
         question = get_object_or_404(Question, id=id, is_deleted=False)
-        comments = Comment.objects.filter(question=question)
+        comments = Comment.objects.select_related(
+            "author"
+        ).prefetch_related(
+            "replies__author"
+        ).filter(question=question)
         serializer = QuestionCommentSerializer(comments, many=True)
         return Response(serializer.data)
         

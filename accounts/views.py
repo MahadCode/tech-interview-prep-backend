@@ -127,7 +127,7 @@ class EmailVerificationView(APIView):
     renderer_classes = [JSONRenderer]
 
     def get(self, request, token):
-        verification_token = EmailVerificationToken.objects.filter(
+        verification_token = EmailVerificationToken.objects.select_related("user").filter(
             token=token
         ).first()
 
@@ -245,7 +245,7 @@ class PasswordResetView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        token_column = PasswordResetToken.objects.filter(
+        token_column = PasswordResetToken.objects.select_related("user").filter(
             token=token
         ).first()
 
