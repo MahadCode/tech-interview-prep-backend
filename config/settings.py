@@ -165,12 +165,17 @@ REST_FRAMEWORK = {
     ],
 }
 
+
+FRONTEND_URL = os.getenv("FRONTEND_URL")
+
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",      # Local frontend development   # Production domain
+    "http://localhost:5173", 
+    FRONTEND_URL,
 ]
 CORS_ALLOW_CREDENTIALS = True
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
+    FRONTEND_URL,
 ]
 
 if RAILWAY_PUBLIC_DOMAIN:
